@@ -1,0 +1,31 @@
+https://groups.google.com/a/chromium.org/g/chromium-dev/c/NAdj_e7NMr0/m/LAleh0hKBgAJ
+
+andrey....@gmail.com
+unread,
+Mar 6, 2018, 8:08:03 PM
+to Chromium-dev
+I want to create some kind of plugin fro my custom Chromium build, and I need to execute some JavaScript code.
+I did it, by using WebContents.evaluateJavaScript() method, but it is not work in iframe.
+I tried to set disable-web-security switch in args.gn, but it does not work, and it looks like as a security hole also.
+Are there any way to execute some inbuilt JavaScript in iframes for every webpage?
+
+
+Daniel Cheng's profile photo
+Daniel Cheng
+unread,
+Mar 7, 2018, 1:56:02 AM
+to andrey....@gmail.com, Chromium-dev
+From C++, one option is content::RenderFrameHost::ExecuteJavaScriptInIsolatedWorld() in combination with a content::WebContentsObserver.
+Note that if you're using C++, there's often a better option though...
+
+Daniel
+
+
+    -- 
+    -- 
+    Chromium Developers mailing list: chromi...@chromium.org
+    View archives, change email options, or unsubscribe:
+    http://groups.google.com/a/chromium.org/group/chromium-dev
+    ---
+    You received this message because you are subscribed to the Google Groups "Chromium-dev" group.
+    To view this discussion on the web visit https://groups.google.com/a/chromium.org/d/msgid/chromium-dev/a2871b76-7c56-4dc1-ac58-2c92a446c07f%40chromium.org.
