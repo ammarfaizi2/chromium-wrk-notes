@@ -5,12 +5,11 @@ const puppeteer = require('puppeteer-core');
 
 (async () => {
 	const browser = await puppeteer.launch({
-		executablePath: '/home/ammarfaizi2/project/now/chromium/src/out/build001/chrome'
+		executablePath: '/home/ammarfaizi2/work/chromium/src/out/Default/chrome'
 	});
 	const page = await browser.newPage();
-	await page.goto('https://www.ammarfaizi.net/test.html');
+	await page.goto('http://127.0.0.1:8000/main.html');
 	await page.evaluate(function() {
-		x();
 	});
 	await page.screenshot({
 		path: 'example.png'
