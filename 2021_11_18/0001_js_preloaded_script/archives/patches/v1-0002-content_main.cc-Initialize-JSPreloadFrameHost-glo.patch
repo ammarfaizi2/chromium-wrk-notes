@@ -1,0 +1,51 @@
+From a19eb7af5a90b2cf2f1853c0670a4e2d2797bcab Mon Sep 17 00:00:00 2001
+From: Ammar Faizi <ammarfaizi2@gmail.com>
+Date: Sat, 11 Dec 2021 11:03:57 +0700
+Subject: [PATCH v1 2/5] content_main.cc: Initialize JSPreloadFrameHost
+ globally
+
+We initialize JSPreloadFrameHost at initialization here, the next
+called functions then can use the preloaded JavaScript. Before we
+return, we destroy the instance. IOW, this is a long-lived object
+that will be reused many times.
+
+Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
+---
+ content/app/content_main.cc | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/content/app/content_main.cc b/content/app/content_main.cc
+index 5ad6c026e9..889de080cf 100644
+--- a/content/app/content_main.cc
++++ b/content/app/content_main.cc
+@@ -4,6 +4,9 @@
+ 
+ #include "content/public/app/content_main.h"
+ 
++#include "base/js_preload_frame_host.h"
++base::JSPreloadFrameHost* g_js_preload;
++
+ #include "base/allocator/buildflags.h"
+ #include "base/at_exit.h"
+ #include "base/base_switches.h"
+@@ -393,6 +396,9 @@ RunContentProcess(ContentMainParams params,
+     }
+   }
+ 
++  const char* js_preload_file = std::getenv("CHROMIUM_JS_PRELOAD_FILE");
++  ::g_js_preload = new base::JSPreloadFrameHost(js_preload_file);
++
+   if (IsSubprocess())
+     CommonSubprocessInit();
+   exit_code = content_main_runner->Run();
+@@ -416,6 +422,7 @@ RunContentProcess(ContentMainParams params,
+   content_main_runner->Shutdown();
+ #endif
+ 
++  delete ::g_js_preload;
+   return exit_code;
+ }
+ 
+-- 
+2.32.0
+

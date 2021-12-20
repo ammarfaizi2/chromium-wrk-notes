@@ -1,0 +1,67 @@
+From c2f33e38d7b4e7176edbf4ae027c7e65e1bf29c5 Mon Sep 17 00:00:00 2001
+From: Ammar Faizi <ammarfaizi2@gmail.com>
+Date: Tue, 14 Dec 2021 20:51:16 +0700
+Subject: [PATCH v1 5/5] content_main: Handle `--preload-js-file` cmd argument
+
+This adds support to preload JS file from a command line argument.
+
+The use of `CHROMIUM_JS_PRELOAD_FILE` is still supported, the
+`--preload-js-file` file will override the env var.
+
+Usage example:
+```
+chrome --preload-js-file=/home/ammarfaizi2/work/chromium-wrk-notes/test/test.js
+```
+
+The chromium will preload (compile cached) that `test.js` and it will
+call `__preloaded_javascript_func` function in all frames.
+
+Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
+---
+ content/app/content_main.cc             | 17 ++++++++++++++++-
+ content/app/content_main_runner_impl.cc |  1 +
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/content/app/content_main.cc b/content/app/content_main.cc
+index 889de080cf..7acec76985 100644
+--- a/content/app/content_main.cc
++++ b/content/app/content_main.cc
+@@ -396,7 +396,22 @@ RunContentProcess(ContentMainParams params,
+     }
+   }
+ 
+-  const char* js_preload_file = std::getenv("CHROMIUM_JS_PRELOAD_FILE");
++  const char* js_preload_file = nullptr;
++
++  const std::string &js_preload_file_cmd_arg =
++    base::CommandLine::ForCurrentProcess()
++    ->GetSwitchValueASCII("preload-js-file");
++
++  if (js_preload_file_cmd_arg.size() == 0) {
++    js_preload_file = std::getenv("CHROMIUM_JS_PRELOAD_FILE");
++  } else {
++    js_preload_file = js_preload_file_cmd_arg.c_str();
++  }
++
++  if (js_preload_file) {
++    DLOG(INFO) << "Preloading JS file: \"" << js_preload_file << "\"...";
++  }
++
+   ::g_js_preload = new base::JSPreloadFrameHost(js_preload_file);
+ 
+   if (IsSubprocess())
+diff --git a/content/app/content_main_runner_impl.cc b/content/app/content_main_runner_impl.cc
+index 9b3e3ca0cf..1e77bc0dbb 100644
+--- a/content/app/content_main_runner_impl.cc
++++ b/content/app/content_main_runner_impl.cc
+@@ -295,6 +295,7 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
+       switches::kRegisterPepperPlugins,
+       switches::kV,
+       switches::kVModule,
++      "preload-js-file",
+   };
+   cmd_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
+                              kForwardSwitches, base::size(kForwardSwitches));
+-- 
+2.32.0
+

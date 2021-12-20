@@ -1,0 +1,123 @@
+From 353ab04b13b172e39d59f37dc5871e97fb356a7a Mon Sep 17 00:00:00 2001
+From: Ammar Faizi <ammarfaizi2@gmail.com>
+Date: Sat, 11 Dec 2021 10:53:38 +0700
+Subject: [PATCH v1 1/5] base: Create `JSPreloadFrameHost` class
+
+This is used to preload a JavaScript file at initialization. It reads a
+JavaScript code from the given filename and saves it on a global state.
+The saved JavaScript code will be reused as much as possible. The only
+thing that requires us to re-open the file is that, when we have separated
+process that doesn't have the g_js_preload yet (still nullptr).
+
+Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
+---
+ base/js_preload_frame_host.h | 97 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 97 insertions(+)
+ create mode 100644 base/js_preload_frame_host.h
+
+diff --git a/base/js_preload_frame_host.h b/base/js_preload_frame_host.h
+new file mode 100644
+index 0000000000..840ba7442a
+--- /dev/null
++++ b/base/js_preload_frame_host.h
+@@ -0,0 +1,97 @@
++// From: Ammar Faizi <ammarfaizi2@gmail.com>
++//
++// Copyright (c) 2021 Ammar Faizi. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef BASE_JS_PRELOAD_FRAME_HOST_H_
++#define BASE_JS_PRELOAD_FRAME_HOST_H_
++
++// This is used to preload a JavaScript file at initialization. It reads a
++// JavaScript code from the given filename and saves it on a global state.
++// The saved JavaScript code will be reused as much as possible. The only
++// thing that requires us to re-open the file is that, when we have separated
++// process that doesn't have the g_js_preload yet (still nullptr).
++
++#include <cstring>
++#include <cerrno>
++#include <cstdio>
++#include <cstdlib>
++#include "base/logging.h"
++#include "base/check_op.h"
++
++namespace base {
++
++class JSPreloadFrameHost {
++ public:
++  inline bool hasJavaScriptCode() {
++    return js_code_ != nullptr;
++  }
++
++  ~JSPreloadFrameHost() {
++    if (js_code_)
++      free(js_code_);
++  }
++
++  explicit JSPreloadFrameHost(const char *filename) {
++    // static const char vp_js_code[] =
++    //   "function __preloaded_javascript_func() { "
++    //       "window.onload = function () {"
++    //           "let x = document.getElementById(\"h1_main\");"
++    //           "if (x) {"
++    //               "x.innerHTML = \"Main frame success!\";"
++    //           "}"
++    //           "console.log(x);"
++    //           "x = document.getElementById(\"h1_sub\");"
++    //           "if (x) {"
++    //               "x.innerHTML = \"Sub frame success!\";"
++    //           "}"
++    //           "console.log(x);"
++    //       "};"
++    //   "}";
++    // js_code_ = const_cast<char*>(vp_js_code);
++    // return;
++
++    if (!filename)
++      // The caller does not expect a preloaded JS, skip it.
++      return;
++
++    FILE* handle = std::fopen(filename, "r");
++    if (!handle) {
++      int err = errno;
++      DLOG(ERROR)
++        << "Cannot open \"" << filename << "\" for JSPreloadFrameHost: "
++        << std::strerror(err);
++      return;
++    }
++
++    std::fseek(handle, 0, SEEK_END);
++    int32_t size = (int32_t) ftell(handle);
++    CHECK_GE(size, -1);
++    std::fseek(handle, 0, SEEK_SET);
++
++    js_code_ = static_cast<char*>(malloc(size + 1));
++    if (!js_code_) {
++      std::fclose(handle);
++      DLOG(ERROR) << "Cannot allocate memory for JSPreloadFrameHost";
++      return;
++    }
++
++    std::fread(js_code_, sizeof(char), size, handle);
++    js_code_[size] = '\0';
++    std::fclose(handle);
++  }
++
++  inline const char* getJavaScriptCode() {
++    return js_code_;
++  }
++
++ private:
++  char* js_code_ = nullptr;
++};
++
++}  // namespace base
++
++extern base::JSPreloadFrameHost* g_js_preload;
++
++#endif  // BASE_JS_PRELOAD_FRAME_HOST_H_
+-- 
+2.32.0
+
