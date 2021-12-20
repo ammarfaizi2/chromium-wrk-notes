@@ -9,10 +9,6 @@ const puppeteer = require('puppeteer-core');
 	});
 	const page = await browser.newPage();
 	await page.goto('http://127.0.0.1:8000/main.html');
-	await page.evaluate(function() {
-	});
-	await page.screenshot({
-		path: 'example.png'
-	});
+	await page.screenshot({path: 'ss.png'});
 	await browser.close();
 })();
