@@ -1,0 +1,45 @@
+From 5aee394e5b8949e2ea8ba22553f6a8e2563d3dcc Mon Sep 17 00:00:00 2001
+From: Ammar Faizi <ammarfaizi2@gmail.com>
+Date: Mon, 13 Dec 2021 14:39:41 +0700
+Subject: [PATCH v1 4/5] render_frame_impl.cc: Call the preloaded JS script in
+ all frames
+
+This will execute the following small JavaScript code:
+```
+if (typeof __preloaded_javascript_func == 'function') {
+   __preloaded_javascript_func();
+}
+```
+
+Note:
+We pre-compiled cached the `__preloaded_javascript_func()` via
+`RegisterExtension()` as a v8 extension and we call the function here.
+
+Note:
+The `typeof` checks is just to make sure no error happens when the
+extension is not defined.
+
+Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
+---
+ content/renderer/render_frame_impl.cc | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/content/renderer/render_frame_impl.cc b/content/renderer/render_frame_impl.cc
+index 584ae29be1..ee312d2afa 100644
+--- a/content/renderer/render_frame_impl.cc
++++ b/content/renderer/render_frame_impl.cc
+@@ -4003,6 +4003,11 @@ void RenderFrameImpl::DidClearWindowObject() {
+   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
+     SkiaBenchmarking::Install(frame_);
+ 
++  ExecuteJavaScript(base::UTF8ToUTF16(std::string(
++    "if (typeof __preloaded_javascript_func == 'function') {"
++      "__preloaded_javascript_func();"
++    "}")));
++
+   for (auto& observer : observers_)
+     observer.DidClearWindowObject();
+ }
+-- 
+2.32.0
+

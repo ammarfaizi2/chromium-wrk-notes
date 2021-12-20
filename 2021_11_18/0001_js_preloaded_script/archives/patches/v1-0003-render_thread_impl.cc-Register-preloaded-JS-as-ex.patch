@@ -1,0 +1,42 @@
+From 99895cf5098242d0fba7035e7024c5446a401f0b Mon Sep 17 00:00:00 2001
+From: Ammar Faizi <ammarfaizi2@gmail.com>
+Date: Sat, 11 Dec 2021 11:48:24 +0700
+Subject: [PATCH v1 3/5] render_thread_impl.cc: Register preloaded JS as
+ extension
+
+At this point, we register the preloaded JavaScript that lives in
+`::g_js_preload` as a v8 extension.
+
+Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
+---
+ content/renderer/render_thread_impl.cc | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/content/renderer/render_thread_impl.cc b/content/renderer/render_thread_impl.cc
+index b17ed635d6..0d1e31c0a2 100644
+--- a/content/renderer/render_thread_impl.cc
++++ b/content/renderer/render_thread_impl.cc
+@@ -12,6 +12,7 @@
+ #include <utility>
+ #include <vector>
+ 
++#include "base/js_preload_frame_host.h"
+ #include "base/allocator/allocator_extension.h"
+ #include "base/at_exit.h"
+ #include "base/bind.h"
+@@ -738,6 +739,12 @@ void RenderThreadImpl::Init() {
+     base::ThreadPool::PostTask(FROM_HERE,
+                                base::BindOnce([] { SkFontMgr::RefDefault(); }));
+   }
++
++  if (::g_js_preload->hasJavaScriptCode()) {
++    RegisterExtension(std::make_unique<v8::Extension>(
++      "v8/JSPreload",
++      ::g_js_preload->getJavaScriptCode()));
++  }
+ }
+ 
+ RenderThreadImpl::~RenderThreadImpl() {
+-- 
+2.32.0
+

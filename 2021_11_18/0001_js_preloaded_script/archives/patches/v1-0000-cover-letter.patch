@@ -1,0 +1,83 @@
+From: Ammar Faizi <ammarfaizi2@gmail.com>
+Date: Tue, 14 Dec 2021 20:55:55 +0700
+Subject: [PATCH v1 0/5] Add custom preloaded JavaScript for chromium
+
+Hi @vocafeuvre,
+
+## Introduction
+
+This is a patchset to add custom preloaded JavaScript for chromium. There are 5 patches in this series, all will be posted as a reply to this one.
+
+This series is based on the chromium project at commit:
+51596eab97360072521c8145c4f734b70c176884 ("IWYU: add cstring for memset in blink::WebPrivatePtr")
+
+
+## Summary of the patches:
+
+[PATCH 1/5]: base: Create JSPreloadFrameHost class.
+
+This is used to preload a JavaScript file at initialization. It reads a JavaScript code from the given filename and saves it on a global state. The saved JavaScript code will be reused as much as possible. The only thing that requires us to re-open the file is that, when we have separated process that doesn't have the g_js_preload yet (still nullptr).
+
+
+[PATCH 2/5]: content_main.cc: Initialize JSPreloadFrameHost globally.
+
+We initialize JSPreloadFrameHost at initialization here, the next called functions then can use the preloaded JavaScript. Before we return, we destroy the instance. IOW, this is a long-lived object that will be reused many times.
+
+
+[PATCH 3/5]: render_thread_impl.cc: Register preloaded JS as extension/
+
+At this point, we register the preloaded JavaScript that lives in ::g_js_preload as a v8 extension.
+
+
+[PATCH 4/5]: render_frame_impl.cc: Call the preloaded JS script in all frames
+This will execute the following small JavaScript code:
+if (typeof __preloaded_javascript_func == 'function') {
+   __preloaded_javascript_func();
+}
+
+Note:
+We pre-compiled cached the __preloaded_javascript_func() via
+RegisterExtension() as a v8 extension and we call the function here.
+
+Note:
+The typeof checks is just to make sure no error happens when the
+extension is not defined.
+
+
+[PATCH 5/5]: content_main: Handle --preload-js-file cmd argument
+This adds support to preload JS file from a command line argument.
+
+The use of CHROMIUM_JS_PRELOAD_FILE is still supported, the
+--preload-js-file file will override the env var.
+
+Usage example:
+chrome --preload-js-file=/home/ammarfaizi2/work/chromium-wrk-notes/test/test.js
+
+The chromium will preload (compile cached) that test.js and it will call __preloaded_javascript_func function in all frames.
+
+
+## How is this tested?
+This patchset has been tested on Linux Ubuntu 21.10. It works both in headless and headful mode.
+
+Please review!
+Thanks!
+
+Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
+---
+Ammar Faizi (5):
+  base: Create `JSPreloadFrameHost` class
+  content_main.cc: Initialize JSPreloadFrameHost globally
+  render_thread_impl.cc: Register preloaded JS as extension
+  render_frame_impl.cc: Call the preloaded JS script in all frames
+  content_main: Handle `--preload-js-file` cmd argument
+
+ base/js_preload_frame_host.h            | 97 +++++++++++++++++++++++++
+ content/app/content_main.cc             | 22 ++++++
+ content/app/content_main_runner_impl.cc |  1 +
+ content/renderer/render_frame_impl.cc   |  5 ++
+ content/renderer/render_thread_impl.cc  |  7 ++
+ 5 files changed, 132 insertions(+)
+ create mode 100644 base/js_preload_frame_host.h
+
+--
+Ammar Faizi
