@@ -1,0 +1,61 @@
+
+
+TODO list,
+- Investigate chrome/browser/ui/browser.cc
+
+Generate call trace from this file, find some interesting callers.
+
+ammarfaizi2@integral2:~/work/chromium/src$ nice taskset -c 0,4,1,5,2,6 out/Default/chrome
+[245100:245100:1221/013509.483166:ERROR:power_monitor_device_source_stub.cc(11)] Not implemented reached in virtual bool base::PowerMonitorDeviceSource::IsOnBatteryPower()
+[245100:245100:1221/013509.495553:INFO:content_main_runner_impl.cc(1157)] Chrome is running in full browser mode.
+[245100:245100:1221/013509.874589:WARNING:account_consistency_mode_manager.cc(70)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[245134:245134:1221/013510.408130:ERROR:sandbox_linux.cc(377)] InitializeSandbox() called with multiple threads in process gpu-process.
+Received signal 11 SEGV_MAPERR 000000000000
+#0 0x7f4ca224544f base::debug::CollectStackTrace()
+#1 0x7f4ca1fa723a base::debug::StackTrace::StackTrace()
+#2 0x7f4ca1fa71f5 base::debug::StackTrace::StackTrace()
+#3 0x7f4ca2244f1c base::debug::(anonymous namespace)::StackDumpSignalHandler()
+#4 0x7f4c64140520 (/usr/lib/x86_64-linux-gnu/libc.so.6+0x4651f)
+#5 0x563ae89130e3 Browser::Browser()
+#6 0x563ae891253e Browser::Create()
+#7 0x563ae8a29e46 StartupBrowserCreatorImpl::OpenTabsInBrowser()
+#8 0x563ae8a2b02d StartupBrowserCreatorImpl::RestoreOrCreateBrowser()
+#9 0x563ae8a29ab7 StartupBrowserCreatorImpl::DetermineURLsAndLaunch()
+#10 0x563ae8a293cc StartupBrowserCreatorImpl::Launch()
+#11 0x563ae8a20b98 StartupBrowserCreator::LaunchBrowser()
+#12 0x563ae8a216c2 StartupBrowserCreator::ProcessLastOpenedProfiles()
+#13 0x563ae8a20ff5 StartupBrowserCreator::LaunchBrowserForLastProfiles()
+#14 0x563ae8a2059c StartupBrowserCreator::ProcessCmdLineImpl()
+#15 0x563ae8a1f68b StartupBrowserCreator::Start()
+#16 0x563ae4673233 ChromeBrowserMainParts::PreMainMessageLoopRunImpl()
+#17 0x563ae46720d2 ChromeBrowserMainParts::PreMainMessageLoopRun()
+#18 0x7f4c98bacdaf content::BrowserMainLoop::PreMainMessageLoopRun()
+#19 0x7f4c98bb846a base::internal::FunctorTraits<>::Invoke<>()
+#20 0x7f4c98bb8381 base::internal::InvokeHelper<>::MakeItSo<>()
+#21 0x7f4c98bb8307 _ZN4base8internal7InvokerINS0_9BindStateIMN7content15BrowserMainLoopEFivEJNS0_17UnretainedWrapperIS4_EEEEEFivEE7RunImplIS6_NSt4__Cr5tupleIJS8_EEEJLm0EEEEiOT_OT0_NSD_16integer_sequenceImJXspT1_EEEE
+#22 0x7f4c98bb82ac base::internal::Invoker<>::RunOnce()
+#23 0x7f4c99e36b91 _ZNO4base12OnceCallbackIFivEE3RunEv
+#24 0x7f4c99e36826 content::StartupTaskRunner::RunAllTasksNow()
+#25 0x7f4c98bac87b content::BrowserMainLoop::CreateStartupTasks()
+#26 0x7f4c98bbb46a content::BrowserMainRunnerImpl::Initialize()
+#27 0x7f4c98ba9f40 content::BrowserMain()
+#28 0x7f4c9afd5a29 content::RunBrowserProcessMain()
+#29 0x7f4c9afd75db content::ContentMainRunnerImpl::RunBrowser()
+#30 0x7f4c9afd6df3 content::ContentMainRunnerImpl::Run()
+#31 0x7f4c9afd37e8 content::RunContentProcess()
+#32 0x7f4c9afd414a content::ContentMain()
+#33 0x563ae0d64f2a ChromeMain
+#34 0x563ae0d64d52 main
+#35 0x7f4c64127fd0 (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2dfcf)
+#36 0x7f4c6412807d __libc_start_main
+#37 0x563ae0d64c6a _start
+  r8: 0000563aea6eda73  r9: fffffffffffffff8 r10: 00007f4c83933372 r11: 00007f4c83febb40
+ r12: 00007ffc8d6c8978 r13: 0000563ae0d64d30 r14: 0000000000000000 r15: 00007f4ca2414c40
+  di: 0000563aeaaf94f0  si: 00007ffc8d6c5c08  bp: 00007ffc8d6c5f10  bx: 0000000000000000
+  dx: 0000563aeaaf9420  ax: 0000000000000000  cx: 00007ffc8d6c5c08  sp: 00007ffc8d6c5d40
+  ip: 0000563ae89130e3 efl: 0000000000010206 cgf: 002b000000000033 erf: 0000000000000004
+ trp: 000000000000000e msk: 0000000000000000 cr2: 0000000000000000
+[end of stack trace]
+Segmentation fault (core dumped)
+ammarfaizi2@integral2:~/work/chromium/src$
+
