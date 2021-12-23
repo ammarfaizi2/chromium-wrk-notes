@@ -1,7 +1,0 @@
-
-enum IsolatedWorldIDs:
-https://source.chromium.org/chromium/chromium/src/+/main:content/public/common/isolated_world_ids.h;l=13;bpv=0;bpt=1
-
-RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld:
-https://source.chromium.org/chromium/chromium/src/+/main:content/browser/renderer_host/render_frame_host_impl.cc;l=2363;drc=32f574f6df1d37b0d9ed765fe138270414d79e49
-
