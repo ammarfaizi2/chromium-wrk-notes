@@ -3,7 +3,8 @@ From: Ammar Faizi <ammarfaizi2@gmail.com>
 Date: Fri, 24 Dec 2021 00:24:22 +0700
 Subject: [PATCH] toolbar/toolbar_view: Hide address bar, buttons, menu, etc.
 
-Currently there are 16 view items to be hidden on the toolbar view.
+This patch hides many things on the toolbar. Currently there are 16 items to be
+hidden from there:
   01) left_side_panel_button_
   02) back_
   03) forward_
@@ -21,13 +22,16 @@ Currently there are 16 view items to be hidden on the toolbar view.
   15) send_tab_to_self_button_
   16) app_menu_button_
 
-Note for Developers:
-This may change whenever the Chromium version changes. So we should
-always maintain the view in this place. All of this is managed in the
+@@ Short technical explanation:
+To hide these view components, we can call `SetVisible(false)`. For example,
+hiding home button can simply be: `home_->SetVisible(false)`.
+
+@@ Note for Developers (including future developers who maintain this patch):
+The above item list may change over time. To maintain it, you can take a look at
 file: chrome/browser/ui/views/toolbar/toolbar_view.cc
 
-That file is very unlikely to be deleted or moved by the Chromium
-project, so it is the stable hint to maintain this patch functionality.
+That file is very unlikely to be deleted, but it is very likely to change. So
+that file is a stable hint where to maintain this patch functionality.
 
 Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
 ---
@@ -41,7 +45,7 @@ index d115544701..f5969ab336 100644
 @@ -404,6 +404,54 @@ void ToolbarView::Init() {
        button->set_tag(GetViewCommandMap().at(button->GetID()));
    }
- 
+
 +  if (left_side_panel_button_)
 +    left_side_panel_button_->SetVisible(false);
 +
@@ -92,7 +96,7 @@ index d115544701..f5969ab336 100644
 +
    initialized_ = true;
  }
- 
--- 
+
+--
 2.32.0
 
