@@ -1,0 +1,22 @@
+
+In C++ (not via Puppeteer), directly in Chromium:
+I want to be able to add a script that will be preloaded with every frames
+(main frame) and subframes (iframes), it's a 100KB JS script, this will have to
+be compile cached as well for performances. it's very performance sensitive.
+
+Right now =>
+
+    1) Load page
+    2) Add script on top (we lose 50ms doing that)
+
+What we want is:
+
+    1) Load script (before the page even)
+    2) Load page
+
+The only criterias are:
+
+- We need to be able to change that script without having to recompile chromium
+  of course, so it can be a filepath as a chrome flag (argumment) where we pass
+  a filepath for example
+- Has to work in headless mode and headful (with puppeteer) on Windows/Mac/Linux

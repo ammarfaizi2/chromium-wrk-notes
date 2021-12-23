@@ -1,0 +1,102 @@
+From 440111dda3b382740847c28f131ac62e8d08a892 Mon Sep 17 00:00:00 2001
+From: Ammar Faizi <ammarfaizi2@gmail.com>
+Date: Fri, 24 Dec 2021 00:24:22 +0700
+Subject: [PATCH] toolbar/toolbar_view: Hide address bar, buttons, menu, etc.
+
+This patch hides many things on the toolbar. Currently there are 16 items to be
+hidden from there:
+  01) left_side_panel_button_
+  02) back_
+  03) forward_
+  04) reload_
+  05) home_
+  06) custom_tab_bar_
+  07) location_bar_
+  08) extensions_container_
+  09) chrome_labs_button_
+  10) cast_
+  11) side_panel_button_
+  12) toolbar_account_icon_container_
+  13) avatar_
+  14) media_button_
+  15) send_tab_to_self_button_
+  16) app_menu_button_
+
+@@ Short technical explanation:
+To hide these view components, we can call `SetVisible(false)`. For example,
+hiding home button can simply be: `home_->SetVisible(false)`.
+
+@@ Note for Developers (including future developers who maintain this patch):
+The above item list may change over time. To maintain it, you can take a look at
+file: chrome/browser/ui/views/toolbar/toolbar_view.cc
+
+That file is very unlikely to be deleted, but it is very likely to change. So
+that file is a stable hint where to maintain this patch functionality.
+
+Signed-off-by: Ammar Faizi <ammarfaizi2@gmail.com>
+---
+ .../browser/ui/views/toolbar/toolbar_view.cc  | 48 +++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+index d115544701..f5969ab336 100644
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -404,6 +404,54 @@ void ToolbarView::Init() {
+       button->set_tag(GetViewCommandMap().at(button->GetID()));
+   }
+
++  if (left_side_panel_button_)
++    left_side_panel_button_->SetVisible(false);
++
++  if (back_)
++    back_->SetVisible(false);
++
++  if (forward_)
++    forward_->SetVisible(false);
++
++  if (reload_)
++    reload_->SetVisible(false);
++
++  if (home_)
++    home_->SetVisible(false);
++
++  if (custom_tab_bar_)
++    custom_tab_bar_->SetVisible(false);
++
++  if (location_bar_)
++    location_bar_->SetVisible(false);
++
++  if (extensions_container_)
++    extensions_container_->SetVisible(false);
++
++  if (chrome_labs_button_)
++    chrome_labs_button_->SetVisible(false);
++
++  if (cast_)
++    cast_->SetVisible(false);
++
++  if (side_panel_button_)
++    side_panel_button_->SetVisible(false);
++
++  if (toolbar_account_icon_container_)
++    toolbar_account_icon_container_->SetVisible(false);
++
++  if (avatar_)
++    avatar_->SetVisible(false);
++
++  if (media_button_)
++    media_button_->SetVisible(false);
++
++  if (send_tab_to_self_button_)
++    send_tab_to_self_button_->SetVisible(false);
++
++  if (app_menu_button_)
++    app_menu_button_->SetVisible(false);
++
+   initialized_ = true;
+ }
+
+--
+2.32.0
+
